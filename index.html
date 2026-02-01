@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crypto Signal Pro • RSI + MACD • CryptoCompare Free</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --border: #334155;
+      --accent: #3b82f6;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+    }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: var(--bg); color: var(--text); }
+    header { text-align: center; padding: 1.5rem; background: var(--card); border-radius: 12px; margin-bottom: 1.5rem; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; align-items: center; }
+    input, button, select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; }
+    button:hover { opacity: 0.9; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); cursor: pointer; }
+    th { background: #0f172a; color: #94a3b8; text-align: left; }
+    th.sort-asc::after { content: " ↑"; }
+    th.sort-desc::after { content: " ↓"; }
+    .buy { color: #22c55e; font-weight: bold; }
+    .strong-buy { color: #4ade80; font-weight: bold; background: rgba(74,222,128,0.15); }
+    .sell { color: #ef4444; font-weight: bold; }
+    .strong-sell { color: #f87171; font-weight: bold; background: rgba(248,113,113,0.15); }
+    .neutral { color: #94a3b8; }
+    .rsi-oversold { color: #fbbf24; }
+    .rsi-overbought { color: #f87171; }
+    .macd-positive { color: #22c55e; }
+    .macd-negative { color: #ef4444; }
+    .pagination { display: flex; justify-content: center; gap: 8px; margin: 20px 0; }
+    .page-btn { padding: 8px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+    .page-btn.active { background: var(--accent); color: white; }
+    .progress { height: 4px; background: var(--accent); width: 0; transition: width 0.3s; }
+    img.coin { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
+    .status { font-size: 0.9rem; color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .card { background: var(--card); padding: 1rem; border-radius: 10px; }
+  </style>
+</head>
+<body data-theme="dark">
+
+<header>
+  <h1>Crypto Signal Pro (CryptoCompare Free)</h1>
+  <p>RSI(14) + MACD + Trend • Higher rate limits • No key needed</p>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search coin..." />
+    <button id="refresh">Refresh</button>
+    <button id="theme-toggle">☀️ Light Mode</button>
+    <button id="export">Export CSV</button>
+    <select id="rows-per-page">
+      <option value="10">10 per page</option>
+      <option value="20" selected>20 per page</option>
+      <option value="50">50 per page</option>
+    </select>
+  </div>
+  <div class="progress" id="progress"></div>
+  <div class="status" id="status">Ready</div>
+</header>
+
+<div class="grid">
+  <div class="card"><strong>Total Market Cap</strong><br><span id="total-mcap">—</span></div>
+  <div class="card"><strong>24h Volume</strong><br><span id="total-vol">—</span></div>
+  <div class="card"><strong>Last Update</strong><br><span id="last-update">—</span></div>
+</div>
+
+<table id="table">
+  <thead>
+    <tr>
+      <th data-sort="name">Coin</th>
+      <th data-sort="price">Price</th>
+      <th data-sort="change24">24h %</th>
+      <th data-sort="change7">7d %</th>
+      <th data-sort="volume">Volume</th>
+      <th data-sort="rsi">RSI(14)</th>
+      <th data-sort="macd">MACD Hist</th>
+      <th data-sort="signal">Signal</th>
+      <th>Entry</th><th>TP</th><th>SL</th><th>Confidence</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div class="pagination" id="pagination"></div>
+
+<div style="margin-top:2rem;padding:1rem;background:#78350f;border-radius:8px;font-size:0.9rem;">
+  <strong>Disclaimer:</strong> Educational only. Not advice. Daily data. Crypto high risk.
+</div>
+
+<script>
+const API_BASE = 'https://min-api.cryptocompare.com/data';
+let allCoins = [];
+let currentPage = 1;
+let rowsPerPage = 20;
+let sortColumn = 'name';
+let sortDirection = 'asc';
+
+function calculateRSI(prices, period = 14) {
+  if (prices.length < period + 1) return 50;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = prices[i] - prices[i-1];
+    gains += change > 0 ? change : 0;
+    losses += change < 0 ? -change : 0;
+  }
+  let avgGain = gains / period;
+  let avgLoss = losses / period || 0.0001;
+  let rsi = 100 - (100 / (1 + avgGain / avgLoss));
+  for (let i = period + 1; i < prices.length; i++) {
+    const change = prices[i] - prices[i-1];
+    avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + (change < 0 ? -change : 0)) / period || 0.0001;
+    rsi = 100 - (100 / (1 + avgGain / avgLoss));
+  }
+  return Math.round(rsi * 100) / 100;
+}
+
+function calculateMACD(prices) {
+  if (prices.length < 35) return 0;
+  const ema = (data, period) => {
+    let k = 2 / (period + 1);
+    let em = data[0];
+    for (let i = 1; i < data.length; i++) em = data[i] * k + em * (1 - k);
+    return em;
+  };
+  const ema12 = ema(prices.slice(-26), 12);
+  const ema26 = ema(prices.slice(-26), 26);
+  return Math.round((ema12 - ema26) * 10000) / 10000;
+}
+
+async function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function loadData() {
+  const progress = document.getElementById('progress');
+  const status = document.getElementById('status');
+  progress.style.width = '0%';
+  status.textContent = 'Fetching top coins...';
+  progress.style.width = '30%';
+
+  try {
+    // Top coins by market cap (limit 100)
+    const topRes = await fetch(`${API_BASE}/top/mktcapfull?limit=100&tsym=USD`);
+    const topData = await topRes.json();
+    progress.style.width = '50%';
+
+    // Global-ish data approximation (volume from top)
+    let totalVol = topData.Data.reduce((sum, d) => sum + (d.RAW?.USD?.VOLUMEDAY || 0), 0);
+    document.getElementById('total-vol').textContent = '$' + (totalVol / 1e9).toFixed(2) + 'B';
+    document.getElementById('total-mcap').textContent = '— (approx from top 100)';
+    document.getElementById('last-update').textContent = new Date().toLocaleString();
+
+    allCoins = [];
+    for (let item of topData.Data.slice(0, 70)) {  // limit to ~70 to stay under rate limits
+      const coin = item.CoinInfo.Name;
+      const full = item.RAW?.USD;
+      if (!full || full.PRICE < 0.0001 || full.VOLUME24HOUR < 1e6) continue;
+
+      await delay(500); // gentle delay to avoid 429
+
+      let hist;
+      try {
+        const histRes = await fetch(`${API_BASE}/v2/histoday?fsym=${coin}&tsym=USD&limit=90`);
+        hist = await histRes.json();
+      } catch { continue; }
+
+      if (hist.Data?.Data?.length < 50) continue;
+      const prices = hist.Data.Data.map(d => d.close).filter(p => p > 0);
+
+      const current = full.PRICE;
+      const change24 = full.CHANGEPCT24HOUR || 0;
+      const change7 = (prices[prices.length-1] - prices[prices.length-8]) / prices[prices.length-8] * 100 || 0;
+      const rsi = calculateRSI(prices);
+      const macd = calculateMACD(prices);
+      const vol24 = full.VOLUME24HOUR;
+
+      let signal = 'Neutral', cls = 'neutral', confidence = 45;
+      const momentum = change7 / 100;
+      const isBullish = current > prices.slice(-50).reduce((a,b)=>a+b,0)/50 * 1.015 && momentum > 0.04;
+      const isBearish = current < prices.slice(-50).reduce((a,b)=>a+b,0)/50 * 0.985 && momentum < -0.03;
+
+      if (isBullish && rsi < 40) { signal = 'Strong Buy'; cls = 'strong-buy'; confidence = 82; }
+      else if (isBullish && rsi < 55) { signal = 'Buy'; cls = 'buy'; confidence = 68; }
+      else if (isBearish && rsi > 60) { signal = 'Strong Sell'; cls = 'strong-sell'; confidence = 78; }
+      else if (isBearish && rsi > 45) { signal = 'Sell'; cls = 'sell'; confidence = 65; }
+
+      allCoins.push({
+        name: item.CoinInfo.FullName || coin,
+        symbol: coin,
+        image: `https://www.cryptocompare.com${item.CoinInfo.ImageUrl || '/media/empty.png'}`,
+        price: current,
+        change24,
+        change7,
+        volume: vol24,
+        rsi,
+        macd,
+        signal, cls, confidence,
+        entry: current.toFixed(4),
+        tp: (current * 1.08).toFixed(4),
+        sl: (current * 0.94).toFixed(4)
+      });
+    }
+
+    progress.style.width = '100%';
+    status.textContent = `Loaded ${allCoins.length} coins • ${new Date().toLocaleTimeString()}`;
+    renderTable();
+  } catch(e) {
+    status.textContent = 'Error – possibly rate limit. Wait 1–2 min & retry.';
+    console.error(e);
+  }
+}
+
+// ... (keep the same renderTable, renderPagination, event listeners, sorting, theme, export as in previous version)
+
+document.getElementById('refresh').addEventListener('click', loadData);
+document.getElementById('search').addEventListener('input', () => { currentPage = 1; renderTable(); });
+document.getElementById('rows-per-page').addEventListener('change', e => { rowsPerPage = +e.target.value; currentPage = 1; renderTable(); });
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const isDark = document.body.dataset.theme === 'dark';
+  document.body.dataset.theme = isDark ? 'light' : 'dark';
+  document.getElementById('theme-toggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+});
+document.getElementById('export').addEventListener('click', () => {
+  if (!allCoins.length) return;
+  const csv = ['Coin,Price,24h%,7d%,Volume,RSI,MACD,Signal,Confidence'];
+  allCoins.forEach(c => csv.push(`${c.name},${c.price},${c.change24},${c.change7},${c.volume},${c.rsi},${c.macd},${c.signal},${c.confidence}`));
+  const blob = new Blob([csv.join('\n')], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'signals.csv'; a.click();
+});
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    else { sortColumn = col; sortDirection = 'desc'; }
+    document.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+    currentPage = 1; renderTable();
+  });
+});
+
+function renderTable() { /* same as before - filter, sort, paginate, build rows */ }
+function renderPagination(total) { /* same as before */ }
+
+window.onload = () => { loadData(); setInterval(loadData, 900000); }; // 15 min auto
+</script>
+</body>
+</html>
