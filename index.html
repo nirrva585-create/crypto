@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Strict Crypto Signals • Alerts • Stable</title>
+  <title>Crypto Signals • Stable & Strict</title>
   <style>
     :root {
       --bg: #0a0e17;
@@ -15,7 +15,7 @@
     body {
       font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 12px 16px;
+      padding: 16px;
       background: var(--bg);
       color: var(--text);
       font-size: 0.95rem;
@@ -29,23 +29,22 @@
     }
     h1 {
       margin: 0;
-      font-size: 1.35rem;
+      font-size: 1.4rem;
       font-weight: 600;
     }
     #status {
       color: #9ca3af;
       font-size: 0.85rem;
-      margin-top: 4px;
+      margin-top: 6px;
     }
     .controls {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: center;
       margin: 12px 0;
     }
     input, button {
-      padding: 8px 12px;
+      padding: 8px 14px;
       border-radius: 6px;
       background: #1f2937;
       border: 1px solid #374151;
@@ -58,12 +57,6 @@
       cursor: pointer;
     }
     button:hover { opacity: 0.92; }
-    .alert-toggle {
-      background: #374151;
-    }
-    .alert-toggle.active {
-      background: #10b981;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -73,7 +66,7 @@
       font-size: 0.9rem;
     }
     th, td {
-      padding: 9px 10px;
+      padding: 10px 12px;
       text-align: center;
       border-bottom: 1px solid #374151;
     }
@@ -92,7 +85,7 @@
     .neutral   { color: #9ca3af; font-style: italic; }
     .no-data {
       text-align: center;
-      padding: 40px 20px;
+      padding: 50px 20px;
       color: #6b7280;
       font-style: italic;
     }
@@ -101,14 +94,13 @@
 <body>
 
 <header>
-  <h1>NIVA RANI TOOL 100 WIN</h1>
+  <h1>Crypto Signals</h1>
   <div id="status">Initializing...</div>
 </header>
 
 <div class="controls">
   <input type="text" id="search" placeholder="Search coin...">
-  <button id="refresh">↻ Manual Refresh</button>
-  <button id="alert-toggle" class="alert-toggle active">🔔 Alerts ON</button>
+  <button id="refresh">↻ Refresh Now</button>
 </div>
 
 <table id="table">
@@ -128,28 +120,27 @@
 
 <script>
 const COINGECKO = 'https://api.coingecko.com/api/v3';
-let previousStrongSignals = new Set();
-let alertsEnabled = true;
 
-document.getElementById('alert-toggle').onclick = function() {
-  alertsEnabled = !alertsEnabled;
-  this.textContent = alertsEnabled ? '🔔 Alerts ON' : '🔕 Alerts OFF';
-  this.className = 'alert-toggle ' + (alertsEnabled ? 'active' : '');
-};
-
-async function fetchWithRetry(url, retries = 3, delay = 2000) {
-  for (let i = 0; i < retries; i++) {
+async function fetchWithRetry(url, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const res = await fetch(url);
       if (res.ok) return await res.json();
+
       if (res.status === 429) {
-        await new Promise(r => setTimeout(r, delay * (i + 1)));
+        const wait = 8000 * attempt;
+        document.getElementById('status').textContent = `Rate limit – wait ${wait/1000}s...`;
+        await new Promise(r => setTimeout(r, wait));
         continue;
       }
+
       throw new Error(`HTTP ${res.status}`);
     } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise(r => setTimeout(r, delay));
+      if (attempt === maxRetries) {
+        document.getElementById('status').textContent = 'Network or API error – retrying soon...';
+        throw err;
+      }
+      await new Promise(r => setTimeout(r, 4000));
     }
   }
   throw new Error('Max retries reached');
@@ -157,14 +148,16 @@ async function fetchWithRetry(url, retries = 3, delay = 2000) {
 
 async function loadData() {
   const status = document.getElementById('status');
-  status.textContent = 'Scanning strong movers...';
+  status.textContent = 'Fetching real-time data...';
 
   try {
-    // Step 1: BTC (small request first)
+    // 1. BTC (small request)
     const btcData = await fetchWithRetry(`${COINGECKO}/coins/markets?vs_currency=usd&ids=bitcoin`);
     const btc24h = btcData[0]?.price_change_percentage_24h || 0;
 
-    // Step 2: Main coins
+    await new Promise(r => setTimeout(r, 1200)); // polite delay
+
+    // 2. Main coins
     const coins = await fetchWithRetry(
       `${COINGECKO}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
     );
@@ -172,7 +165,6 @@ async function loadData() {
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
 
-    let currentStrongSignals = new Set();
     let ranked = [];
 
     coins.forEach(c => {
@@ -185,18 +177,15 @@ async function loadData() {
       let signal = 'NEUTRAL';
       let cls = 'neutral';
 
-      // Strict thresholds
       if (ch24 > 10 && volRatio > 4 && rel > 6) {
         signal = 'STRONG BUY';
         cls = 'strong-buy';
-        currentStrongSignals.add(`${c.symbol}-STRONG BUY`);
       } else if (ch24 > 6 && volRatio > 2.5 && rel > 3) {
         signal = 'BUY';
         cls = 'buy';
       } else if (ch24 < -10 && volRatio > 4 && rel < -6) {
         signal = 'STRONG SELL';
         cls = 'strong-sell';
-        currentStrongSignals.add(`${c.symbol}-STRONG SELL`);
       } else if (ch24 < -6 && volRatio > 2.5 && rel < -3) {
         signal = 'SELL';
         cls = 'sell';
@@ -222,19 +211,6 @@ async function loadData() {
       });
     });
 
-    // New strong signal alerts
-    if (alertsEnabled) {
-      currentStrongSignals.forEach(sig => {
-        if (!previousStrongSignals.has(sig)) {
-          const [symbol, sigType] = sig.split('-');
-          alert(`NEW ${sigType} ALERT!\n${symbol} just triggered a strong signal!`);
-          new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
-        }
-      });
-      previousStrongSignals = currentStrongSignals;
-    }
-
-    // Sort strongest first
     ranked.sort((a,b) => {
       const sa = a.signal.includes('STRONG') ? 1000 : a.signal.includes('BUY') || a.signal.includes('SELL') ? 500 : 0;
       const sb = b.signal.includes('STRONG') ? 1000 : b.signal.includes('BUY') || b.signal.includes('SELL') ? 500 : 0;
@@ -242,7 +218,7 @@ async function loadData() {
     });
 
     if (ranked.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding:40px; color:#6b7280; text-align:center;">No strong signals right now</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">No strong signals detected right now</td></tr>';
     } else {
       ranked.forEach(c => {
         const tr = document.createElement('tr');
@@ -260,15 +236,15 @@ async function loadData() {
       });
     }
 
-    status.textContent = `Updated: ${new Date().toLocaleTimeString()} • Next refresh in 10s`;
+    status.textContent = `Updated: ${new Date().toLocaleTimeString()} • Auto-refresh every 60 seconds`;
   } catch (err) {
-    status.textContent = 'Network error – retrying in 10s...';
-    console.error('Load error:', err);
+    status.textContent = 'Network or API error – retrying in 60 seconds...';
+    console.error('Load error:', err.message);
   }
 }
 
-// Auto-refresh every 10 seconds
-setInterval(loadData, 10000);
+// Auto-refresh every 60 seconds – safe and stable
+setInterval(loadData, 60000);
 
 document.getElementById('refresh').onclick = loadData;
 
