@@ -3,63 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Accurate Crypto Signals • Pro Edition</title>
+  <title>Strict Crypto Signals • Alerts</title>
   <style>
-    :root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #3b82f6; --green: #22c55e; --red: #ef4444; }
-    body { font-family: system-ui, sans-serif; margin:0; padding:16px; background:var(--bg); color:var(--text); }
-    header { text-align:center; padding:1.5rem; background:var(--card); border-radius:12px; margin-bottom:1rem; }
-    .top-coin { background:var(--card); padding:16px; border-radius:12px; margin-bottom:1rem; text-align:center; }
-    .top-coin strong { font-size:1.4rem; color:var(--green); }
-    .controls { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
-    input, button, select { padding:10px 14px; border-radius:8px; background:#1e293b; border:1px solid #334155; color:white; }
-    button { background:var(--accent); border:none; cursor:pointer; }
-    button:hover { opacity:0.9; }
-    .settings { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; background:var(--card); padding:16px; border-radius:12px; margin:16px 0; }
-    table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.3); }
-    th, td { padding:12px; text-align:center; border-bottom:1px solid #334155; }
-    tr:hover { background:rgba(59,130,246,0.15); cursor:pointer; }
-    .strong-buy { background:rgba(34,197,94,0.25); color:var(--green); font-weight:bold; }
-    .buy { color:var(--green); font-weight:bold; }
-    .sell { color:var(--red); font-weight:bold; }
-    .strong-sell { background:rgba(239,68,68,0.25); color:var(--red); font-weight:bold; }
-    .up { color:var(--green); font-weight:bold; }
-    .down { color:var(--red); font-weight:bold; }
-    .pagination { display:flex; justify-content:center; gap:10px; margin:20px 0; }
-    .page-btn { padding:8px 14px; background:#1e293b; border:1px solid #334155; border-radius:6px; cursor:pointer; }
-    .page-btn.active { background:var(--accent); }
-    #chart-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column; }
-    #chart-modal.active { display:flex; }
-    #chart-title { font-size:1.6rem; color:white; margin:20px 0; }
-    #chart-container { width:92%; max-width:1280px; height:72vh; border-radius:12px; overflow:hidden; }
-    #close-modal { position:absolute; top:20px; right:25px; background:var(--red); color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:bold; z-index:10; }
+    :root {
+      --bg: #0a0e17;
+      --card: #111827;
+      --text: #d1d5db;
+      --green: #10b981;
+      --red: #ef4444;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 12px 16px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    header {
+      text-align: center;
+      padding: 12px;
+      background: var(--card);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+    #status {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    input, button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: white;
+      font-size: 0.9rem;
+    }
+    button {
+      background: #3b82f6;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.92; }
+    .alert-toggle {
+      background: #374151;
+    }
+    .alert-toggle.active {
+      background: #10b981;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 9px 10px;
+      text-align: center;
+      border-bottom: 1px solid #374151;
+    }
+    th {
+      background: #0f172a;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+    tr:hover {
+      background: rgba(16,185,129,0.08);
+    }
+    .strong-buy { background: rgba(16,185,129,0.22); color: var(--green); font-weight: 700; }
+    .buy       { color: var(--green); font-weight: 600; }
+    .sell      { color: var(--red);   font-weight: 600; }
+    .strong-sell { background: rgba(239,68,68,0.22); color: var(--red); font-weight: 700; }
+    .neutral   { color: #9ca3af; font-style: italic; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Accurate Crypto Signals • Pro</h1>
+  <h1>Strict Crypto Signals + Alerts</h1>
   <div id="status">Loading real-time data...</div>
 </header>
 
-<div class="top-coin" id="top-coin">
-  <div><strong id="top-name">—</strong></div>
-  <div>Signal: <span id="top-signal">—</span> | Score: <span id="top-score">—</span></div>
-</div>
-
-<div class="settings">
-  <div><span class="setting-label">Strong Buy 24h %</span><br><input type="number" id="sb24" value="8" step="0.5"></div>
-  <div><span class="setting-label">Strong Buy 7d %</span><br><input type="number" id="sb7" value="18" step="0.5"></div>
-  <div><span class="setting-label">Buy 24h %</span><br><input type="number" id="b24" value="5" step="0.5"></div>
-  <div><span class="setting-label">Buy 7d %</span><br><input type="number" id="b7" value="12" step="0.5"></div>
-  <div><span class="setting-label">Min Vol Ratio</span><br><input type="number" id="volratio" value="2.5" step="0.1"></div>
-  <div><span class="setting-label">TP %</span><br><input type="number" id="tp" value="15" step="1"></div>
-  <div><span class="setting-label">SL %</span><br><input type="number" id="sl" value="7" step="1"></div>
-</div>
-
 <div class="controls">
   <input type="text" id="search" placeholder="Search coin...">
-  <button id="refresh">↻ Refresh</button>
-  <button id="export">Export CSV</button>
+  <button id="refresh">↻ Manual</button>
+  <button id="alert-toggle" class="alert-toggle">🔔 Alerts ON</button>
 </div>
 
 <table id="table">
@@ -68,238 +111,146 @@
       <th>Coin</th>
       <th>Price</th>
       <th>24h</th>
-      <th>7d</th>
-      <th>Trend</th>
       <th>Signal</th>
-      <th>Entry</th>
-      <th>TP</th>
-      <th>SL</th>
-      <th>Score</th>
-      <th>Conf</th>
+      <th>Entry → TP / SL</th>
     </tr>
   </thead>
   <tbody id="tbody"></tbody>
 </table>
 
-<div class="pagination" id="pagination"></div>
-
-<div id="chart-modal">
-  <button id="close-modal">× Close</button>
-  <div id="chart-title">Loading chart…</div>
-  <div id="chart-container"></div>
-</div>
-
 <script>
 const COINGECKO = 'https://api.coingecko.com/api/v3';
-const FNG_URL = 'https://api.alternative.me/fng/?limit=1';
+let previousStrongSignals = new Set(); // track previous strong signals to detect new ones
+let alertsEnabled = true;
 
-let allCoins = [];
-let currentPage = 1;
-const perPage = 20;
-
-function saveSettings() {
-  const s = {};
-  ['sb24','sb7','b24','b7','volratio','tp','sl'].forEach(id => {
-    s[id] = parseFloat(document.getElementById(id).value);
-  });
-  localStorage.setItem('proSettings', JSON.stringify(s));
-}
-
-function loadSettings() {
-  const saved = localStorage.getItem('proSettings');
-  if (saved) {
-    const s = JSON.parse(saved);
-    Object.keys(s).forEach(k => {
-      const el = document.getElementById(k);
-      if (el) el.value = s[k];
-    });
-  }
-}
+document.getElementById('alert-toggle').onclick = function() {
+  alertsEnabled = !alertsEnabled;
+  this.textContent = alertsEnabled ? '🔔 Alerts ON' : '🔕 Alerts OFF';
+  this.className = 'alert-toggle ' + (alertsEnabled ? 'active' : '');
+};
 
 async function loadData() {
   const status = document.getElementById('status');
-  status.textContent = 'Analyzing real-time market...';
+  status.textContent = 'Scanning strong movers...';
 
   try {
-    const [markets, fngRes] = await Promise.all([
-      fetch(`${COINGECKO}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h,7d`).then(r => r.json()),
-      fetch(FNG_URL).then(r => r.json())
-    ]);
+    const btcRes = await fetch(`${COINGECKO}/coins/markets?vs_currency=usd&ids=bitcoin`);
+    const btc = (await btcRes.json())[0] || {};
+    const btc24h = btc.price_change_percentage_24h || 0;
 
-    const fgValue = fngRes.data[0].value;
+    const res = await fetch(
+      `${COINGECKO}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
+    );
+    const coins = await res.json();
 
-    allCoins = markets.map(c => {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    let currentStrongSignals = new Set();
+
+    let ranked = [];
+
+    coins.forEach(c => {
+      if ((c.market_cap || 0) < 200_000_000 || (c.total_volume || 0) < 30_000_000) return;
+
       const ch24 = c.price_change_percentage_24h || 0;
-      const ch7d = c.price_change_percentage_7d_in_currency || 0;
-      const volRatio = c.market_cap > 0 ? c.total_volume / c.market_cap : 0;
+      const volRatio = (c.total_volume || 0) / (c.market_cap || 1);
+      const rel = ch24 - btc24h;
 
-      const sb24 = parseFloat(document.getElementById('sb24').value);
-      const sb7 = parseFloat(document.getElementById('sb7').value);
-      const b24 = parseFloat(document.getElementById('b24').value);
-      const b7 = parseFloat(document.getElementById('b7').value);
-      const minVol = parseFloat(document.getElementById('volratio').value);
+      let signal = 'NEUTRAL';
+      let cls = 'neutral';
 
-      let signal = 'NEUTRAL', cls = 'neutral', conf = 40, score = 0;
-
-      const consistentUp = ch24 > 0 && ch7d > 0;
-      const consistentDown = ch24 < 0 && ch7d < 0;
-
-      if (ch24 > sb24 && ch7d > sb7 && volRatio > minVol && consistentUp) {
-        signal = 'STRONG BUY'; cls = 'strong-buy'; conf = 92; score = 92;
-      } else if (ch24 > b24 && ch7d > b7 && volRatio > minVol - 0.8 && consistentUp) {
-        signal = 'BUY'; cls = 'buy'; conf = 78; score = 78;
-      } else if (ch24 < -sb24 && ch7d < -sb7 && volRatio > minVol && consistentDown) {
-        signal = 'STRONG SELL'; cls = 'strong-sell'; conf = 90; score = -90;
-      } else if (ch24 < -b24 && ch7d < -b7 && volRatio > minVol - 0.8 && consistentDown) {
-        signal = 'SELL'; cls = 'sell'; conf = 75; score = -75;
+      // Very strict strong signals
+      if (ch24 > 10 && volRatio > 4 && rel > 6) {
+        signal = 'STRONG BUY';
+        cls = 'strong-buy';
+        currentStrongSignals.add(`${c.symbol}-STRONG BUY`);
+      } else if (ch24 > 6 && volRatio > 2.5 && rel > 3) {
+        signal = 'BUY';
+        cls = 'buy';
+      } else if (ch24 < -10 && volRatio > 4 && rel < -6) {
+        signal = 'STRONG SELL';
+        cls = 'strong-sell';
+        currentStrongSignals.add(`${c.symbol}-STRONG SELL`);
+      } else if (ch24 < -6 && volRatio > 2.5 && rel < -3) {
+        signal = 'SELL';
+        cls = 'sell';
       }
 
-      // Adjust with Fear & Greed
-      if (fgValue < 30 && signal.includes('BUY')) conf += 8;
-      if (fgValue > 70 && signal.includes('SELL')) conf += 6;
+      if (signal === 'NEUTRAL') return;
 
       const entry = c.current_price;
-      const tpPct = parseFloat(document.getElementById('tp').value) / 100;
-      const slPct = parseFloat(document.getElementById('sl').value) / 100;
-      const tp = (entry * (1 + tpPct)).toFixed(4);
-      const sl = (entry * (1 - slPct)).toFixed(4);
+      const tp = (entry * 1.18).toFixed(4);
+      const sl = (entry * 0.91).toFixed(4);
 
-      return {
+      ranked.push({
         name: c.name,
         symbol: c.symbol.toUpperCase(),
         image: c.image,
-        price: c.current_price,
-        ch24, ch7d,
-        volume: c.total_volume,
-        volRatio,
-        signal, cls, conf, score,
-        entry, tp, sl
-      };
+        price: entry,
+        ch24: ch24.toFixed(2),
+        signal,
+        cls,
+        entry: entry.toFixed(4),
+        tp,
+        sl
+      });
     });
 
-    // Sort by score descending
-    allCoins.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
-
-    status.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
-    renderTable();
-
-    // Show top coin
-    if (allCoins.length > 0) {
-      const top = allCoins[0];
-      document.getElementById('top-name').textContent = `${top.name} (${top.symbol})`;
-      document.getElementById('top-signal').textContent = top.signal;
-      document.getElementById('top-signal').className = top.cls;
-      document.getElementById('top-score').textContent = `Score: ${top.score > 0 ? '+' : ''}${top.score}`;
+    // Detect new strong signals and alert
+    if (alertsEnabled) {
+      currentStrongSignals.forEach(sig => {
+        if (!previousStrongSignals.has(sig)) {
+          const [symbol, sigType] = sig.split('-');
+          alert(`NEW ${sigType} ALERT!\n${symbol} just triggered a strong signal!`);
+          // Simple beep sound
+          new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
+        }
+      });
+      previousStrongSignals = currentStrongSignals;
     }
 
-  } catch (e) {
-    status.textContent = 'Error: ' + e.message;
+    // Sort strongest first
+    ranked.sort((a,b) => {
+      const sa = a.signal.includes('STRONG') ? 1000 : a.signal.includes('BUY') || a.signal.includes('SELL') ? 500 : 0;
+      const sb = b.signal.includes('STRONG') ? 1000 : b.signal.includes('BUY') || b.signal.includes('SELL') ? 500 : 0;
+      return sb - sa || Math.abs(b.ch24) - Math.abs(a.ch24);
+    });
+
+    ranked.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align:left">
+          <img src="${c.image}" width="20" height="20" style="vertical-align:middle; margin-right:6px; border-radius:50%;">
+          ${c.name} (${c.symbol})
+        </td>
+        <td>$${c.price.toLocaleString(undefined,{minimumFractionDigits:2,maxFractionDigits:6})}</td>
+        <td>${c.ch24}%</td>
+        <td class="${c.cls}">${c.signal}</td>
+        <td>$${c.entry} → $${c.tp} / $${c.sl}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    status.textContent = `Updated: ${new Date().toLocaleTimeString()} • Auto-refresh every 10 seconds`;
+  } catch (err) {
+    status.textContent = 'Error loading data • Retrying in 10s...';
   }
 }
 
-function renderTable() {
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
-
-  let filtered = [...allCoins];
-  const term = document.getElementById('search').value.trim().toLowerCase();
-  if (term) filtered = filtered.filter(c => c.name.toLowerCase().includes(term) || c.symbol.toLowerCase().includes(term));
-
-  const start = (currentPage - 1) * perPage;
-  const pageData = filtered.slice(start, start + perPage);
-
-  pageData.forEach(c => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="text-align:left"><img src="${c.image}" class="coin">${c.name} (${c.symbol})</td>
-      <td>$${c.price.toLocaleString(undefined,{minimumFractionDigits:2,maxFractionDigits:6})}</td>
-      <td>${c.ch24.toFixed(2)}%</td>
-      <td>${c.ch7d.toFixed(2)}%</td>
-      <td class="${c.ch24 > 0 && c.ch7d > 0 ? 'up' : c.ch24 < 0 && c.ch7d < 0 ? 'down' : ''}">${c.ch24 > 0 && c.ch7d > 0 ? 'UP' : c.ch24 < 0 && c.ch7d < 0 ? 'DOWN' : 'FLAT'}</td>
-      <td class="${c.cls}">${c.signal}</td>
-      <td>$${c.entry.toFixed(4)}</td>
-      <td>$${c.tp}</td>
-      <td>$${c.sl}</td>
-      <td>${c.score}</td>
-      <td>${c.conf}%</td>
-    `;
-    tr.onclick = () => openChart(c.symbol, c.name);
-    tbody.appendChild(tr);
-  });
-
-  renderPagination(filtered.length);
-}
-
-function renderPagination(total) {
-  const pages = Math.ceil(total / perPage);
-  const container = document.getElementById('pagination');
-  container.innerHTML = '';
-  for (let i = 1; i <= pages; i++) {
-    const btn = document.createElement('button');
-    btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-    btn.textContent = i;
-    btn.onclick = () => { currentPage = i; renderTable(); };
-    container.appendChild(btn);
-  }
-}
-
-function openChart(symbol, name) {
-  const modal = document.getElementById('chart-modal');
-  const title = document.getElementById('chart-title');
-  const container = document.getElementById('chart-container');
-  title.textContent = `${name} (${symbol}) Real-time`;
-  container.innerHTML = '';
-
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-  script.async = true;
-  script.innerHTML = JSON.stringify({
-    autosize: true,
-    symbol: `BINANCE:${symbol}USDT`,
-    interval: "D",
-    timezone: "exchange",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    container_id: "chart-container"
-  });
-  container.appendChild(script);
-  modal.classList.add('active');
-}
-
-document.getElementById('close-modal').onclick = () => {
-  document.getElementById('chart-modal').classList.remove('active');
-  document.getElementById('chart-container').innerHTML = '';
-};
+// Auto-refresh every 10 seconds
+setInterval(loadData, 10000);
 
 document.getElementById('refresh').onclick = loadData;
-document.getElementById('search').oninput = () => { currentPage = 1; renderTable(); };
 
-document.getElementById('export').onclick = () => {
-  if (!allCoins.length) return;
-  let csv = 'Coin,Price,24h%,7d%,Signal,Entry,TP,SL,Score,Conf\n';
-  allCoins.forEach(c => {
-    csv += `${c.name},${c.price},${c.ch24},${c.ch7d},${c.signal},${c.entry},${c.tp},${c.sl},${c.score},${c.conf}\n`;
+document.getElementById('search').oninput = function() {
+  const term = this.value.trim().toLowerCase();
+  document.querySelectorAll('#tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
   });
-  const blob = new Blob([csv], {type: 'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'accurate_signals.csv'; a.click();
 };
 
-['sb24','sb7','b24','b7','volratio','tp','sl'].forEach(id => {
-  document.getElementById(id).addEventListener('change', () => {
-    saveSettings();
-    loadData();
-  });
-});
-
-window.onload = () => {
-  loadSettings();
-  loadData();
-  setInterval(loadData, 900000);
-};
+window.onload = loadData;
 </script>
 </body>
 </html>
