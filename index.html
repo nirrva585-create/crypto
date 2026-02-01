@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Strict Crypto Signals • Alerts</title>
+  <title>Strict Crypto Signals • Alerts • Stable</title>
   <style>
     :root {
       --bg: #0a0e17;
@@ -90,19 +90,25 @@
     .sell      { color: var(--red);   font-weight: 600; }
     .strong-sell { background: rgba(239,68,68,0.22); color: var(--red); font-weight: 700; }
     .neutral   { color: #9ca3af; font-style: italic; }
+    .no-data {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Strict Crypto Signals + Alerts</h1>
-  <div id="status">Loading real-time data...</div>
+  <h1>NIVA RANI TOOL 100 WIN</h1>
+  <div id="status">Initializing...</div>
 </header>
 
 <div class="controls">
   <input type="text" id="search" placeholder="Search coin...">
-  <button id="refresh">↻ Manual</button>
-  <button id="alert-toggle" class="alert-toggle">🔔 Alerts ON</button>
+  <button id="refresh">↻ Manual Refresh</button>
+  <button id="alert-toggle" class="alert-toggle active">🔔 Alerts ON</button>
 </div>
 
 <table id="table">
@@ -115,12 +121,14 @@
       <th>Entry → TP / SL</th>
     </tr>
   </thead>
-  <tbody id="tbody"></tbody>
+  <tbody id="tbody">
+    <tr><td colspan="5" class="no-data">Loading strong signals...</td></tr>
+  </tbody>
 </table>
 
 <script>
 const COINGECKO = 'https://api.coingecko.com/api/v3';
-let previousStrongSignals = new Set(); // track previous strong signals to detect new ones
+let previousStrongSignals = new Set();
 let alertsEnabled = true;
 
 document.getElementById('alert-toggle').onclick = function() {
@@ -129,25 +137,42 @@ document.getElementById('alert-toggle').onclick = function() {
   this.className = 'alert-toggle ' + (alertsEnabled ? 'active' : '');
 };
 
+async function fetchWithRetry(url, retries = 3, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return await res.json();
+      if (res.status === 429) {
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+        continue;
+      }
+      throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
 async function loadData() {
   const status = document.getElementById('status');
   status.textContent = 'Scanning strong movers...';
 
   try {
-    const btcRes = await fetch(`${COINGECKO}/coins/markets?vs_currency=usd&ids=bitcoin`);
-    const btc = (await btcRes.json())[0] || {};
-    const btc24h = btc.price_change_percentage_24h || 0;
+    // Step 1: BTC (small request first)
+    const btcData = await fetchWithRetry(`${COINGECKO}/coins/markets?vs_currency=usd&ids=bitcoin`);
+    const btc24h = btcData[0]?.price_change_percentage_24h || 0;
 
-    const res = await fetch(
+    // Step 2: Main coins
+    const coins = await fetchWithRetry(
       `${COINGECKO}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`
     );
-    const coins = await res.json();
 
     const tbody = document.getElementById('tbody');
     tbody.innerHTML = '';
 
     let currentStrongSignals = new Set();
-
     let ranked = [];
 
     coins.forEach(c => {
@@ -160,7 +185,7 @@ async function loadData() {
       let signal = 'NEUTRAL';
       let cls = 'neutral';
 
-      // Very strict strong signals
+      // Strict thresholds
       if (ch24 > 10 && volRatio > 4 && rel > 6) {
         signal = 'STRONG BUY';
         cls = 'strong-buy';
@@ -197,13 +222,12 @@ async function loadData() {
       });
     });
 
-    // Detect new strong signals and alert
+    // New strong signal alerts
     if (alertsEnabled) {
       currentStrongSignals.forEach(sig => {
         if (!previousStrongSignals.has(sig)) {
           const [symbol, sigType] = sig.split('-');
           alert(`NEW ${sigType} ALERT!\n${symbol} just triggered a strong signal!`);
-          // Simple beep sound
           new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play();
         }
       });
@@ -217,24 +241,29 @@ async function loadData() {
       return sb - sa || Math.abs(b.ch24) - Math.abs(a.ch24);
     });
 
-    ranked.forEach(c => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="text-align:left">
-          <img src="${c.image}" width="20" height="20" style="vertical-align:middle; margin-right:6px; border-radius:50%;">
-          ${c.name} (${c.symbol})
-        </td>
-        <td>$${c.price.toLocaleString(undefined,{minimumFractionDigits:2,maxFractionDigits:6})}</td>
-        <td>${c.ch24}%</td>
-        <td class="${c.cls}">${c.signal}</td>
-        <td>$${c.entry} → $${c.tp} / $${c.sl}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    if (ranked.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:40px; color:#6b7280; text-align:center;">No strong signals right now</td></tr>';
+    } else {
+      ranked.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align:left">
+            <img src="${c.image}" width="20" height="20" style="vertical-align:middle; margin-right:6px; border-radius:50%;">
+            ${c.name} (${c.symbol})
+          </td>
+          <td>$${c.price.toLocaleString(undefined,{minimumFractionDigits:2,maxFractionDigits:6})}</td>
+          <td>${c.ch24}%</td>
+          <td class="${c.cls}">${c.signal}</td>
+          <td>$${c.entry} → $${c.tp} / $${c.sl}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-    status.textContent = `Updated: ${new Date().toLocaleTimeString()} • Auto-refresh every 10 seconds`;
+    status.textContent = `Updated: ${new Date().toLocaleTimeString()} • Next refresh in 10s`;
   } catch (err) {
-    status.textContent = 'Error loading data • Retrying in 10s...';
+    status.textContent = 'Network error – retrying in 10s...';
+    console.error('Load error:', err);
   }
 }
 
@@ -250,7 +279,9 @@ document.getElementById('search').oninput = function() {
   });
 };
 
-window.onload = loadData;
+window.onload = () => {
+  loadData();
+};
 </script>
 </body>
 </html>
