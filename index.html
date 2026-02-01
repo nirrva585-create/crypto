@@ -1,260 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Signal Pro • RSI + MACD • CryptoCompare Free</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accurate Crypto Signals • Pro Edition</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --border: #334155;
-      --accent: #3b82f6;
-    }
-    [data-theme="light"] {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --border: #e2e8f0;
-      --accent: #2563eb;
-    }
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: var(--bg); color: var(--text); }
-    header { text-align: center; padding: 1.5rem; background: var(--card); border-radius: 12px; margin-bottom: 1.5rem; }
-    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; align-items: center; }
-    input, button, select { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
-    button { background: var(--accent); color: white; border: none; cursor: pointer; }
-    button:hover { opacity: 0.9; }
-    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border); cursor: pointer; }
-    th { background: #0f172a; color: #94a3b8; text-align: left; }
-    th.sort-asc::after { content: " ↑"; }
-    th.sort-desc::after { content: " ↓"; }
-    .buy { color: #22c55e; font-weight: bold; }
-    .strong-buy { color: #4ade80; font-weight: bold; background: rgba(74,222,128,0.15); }
-    .sell { color: #ef4444; font-weight: bold; }
-    .strong-sell { color: #f87171; font-weight: bold; background: rgba(248,113,113,0.15); }
-    .neutral { color: #94a3b8; }
-    .rsi-oversold { color: #fbbf24; }
-    .rsi-overbought { color: #f87171; }
-    .macd-positive { color: #22c55e; }
-    .macd-negative { color: #ef4444; }
-    .pagination { display: flex; justify-content: center; gap: 8px; margin: 20px 0; }
-    .page-btn { padding: 8px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
-    .page-btn.active { background: var(--accent); color: white; }
-    .progress { height: 4px; background: var(--accent); width: 0; transition: width 0.3s; }
-    img.coin { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
-    .status { font-size: 0.9rem; color: #94a3b8; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .card { background: var(--card); padding: 1rem; border-radius: 10px; }
+    :root { --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #3b82f6; --green: #22c55e; --red: #ef4444; }
+    body { font-family: system-ui, sans-serif; margin:0; padding:16px; background:var(--bg); color:var(--text); }
+    header { text-align:center; padding:1.5rem; background:var(--card); border-radius:12px; margin-bottom:1rem; }
+    .top-coin { background:var(--card); padding:16px; border-radius:12px; margin-bottom:1rem; text-align:center; }
+    .top-coin strong { font-size:1.4rem; color:var(--green); }
+    .controls { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0; }
+    input, button, select { padding:10px 14px; border-radius:8px; background:#1e293b; border:1px solid #334155; color:white; }
+    button { background:var(--accent); border:none; cursor:pointer; }
+    button:hover { opacity:0.9; }
+    .settings { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; background:var(--card); padding:16px; border-radius:12px; margin:16px 0; }
+    table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+    th, td { padding:12px; text-align:center; border-bottom:1px solid #334155; }
+    tr:hover { background:rgba(59,130,246,0.15); cursor:pointer; }
+    .strong-buy { background:rgba(34,197,94,0.25); color:var(--green); font-weight:bold; }
+    .buy { color:var(--green); font-weight:bold; }
+    .sell { color:var(--red); font-weight:bold; }
+    .strong-sell { background:rgba(239,68,68,0.25); color:var(--red); font-weight:bold; }
+    .up { color:var(--green); font-weight:bold; }
+    .down { color:var(--red); font-weight:bold; }
+    .pagination { display:flex; justify-content:center; gap:10px; margin:20px 0; }
+    .page-btn { padding:8px 14px; background:#1e293b; border:1px solid #334155; border-radius:6px; cursor:pointer; }
+    .page-btn.active { background:var(--accent); }
+    #chart-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column; }
+    #chart-modal.active { display:flex; }
+    #chart-title { font-size:1.6rem; color:white; margin:20px 0; }
+    #chart-container { width:92%; max-width:1280px; height:72vh; border-radius:12px; overflow:hidden; }
+    #close-modal { position:absolute; top:20px; right:25px; background:var(--red); color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:bold; z-index:10; }
   </style>
 </head>
-<body data-theme="dark">
+<body>
 
 <header>
-  <h1>Crypto Signal Pro (CryptoCompare Free)</h1>
-  <p>RSI(14) + MACD + Trend • Higher rate limits • No key needed</p>
-  <div class="controls">
-    <input type="text" id="search" placeholder="Search coin..." />
-    <button id="refresh">Refresh</button>
-    <button id="theme-toggle">☀️ Light Mode</button>
-    <button id="export">Export CSV</button>
-    <select id="rows-per-page">
-      <option value="10">10 per page</option>
-      <option value="20" selected>20 per page</option>
-      <option value="50">50 per page</option>
-    </select>
-  </div>
-  <div class="progress" id="progress"></div>
-  <div class="status" id="status">Ready</div>
+  <h1>Accurate Crypto Signals • Pro</h1>
+  <div id="status">Loading real-time data...</div>
 </header>
 
-<div class="grid">
-  <div class="card"><strong>Total Market Cap</strong><br><span id="total-mcap">—</span></div>
-  <div class="card"><strong>24h Volume</strong><br><span id="total-vol">—</span></div>
-  <div class="card"><strong>Last Update</strong><br><span id="last-update">—</span></div>
+<div class="top-coin" id="top-coin">
+  <div><strong id="top-name">—</strong></div>
+  <div>Signal: <span id="top-signal">—</span> | Score: <span id="top-score">—</span></div>
+</div>
+
+<div class="settings">
+  <div><span class="setting-label">Strong Buy 24h %</span><br><input type="number" id="sb24" value="8" step="0.5"></div>
+  <div><span class="setting-label">Strong Buy 7d %</span><br><input type="number" id="sb7" value="18" step="0.5"></div>
+  <div><span class="setting-label">Buy 24h %</span><br><input type="number" id="b24" value="5" step="0.5"></div>
+  <div><span class="setting-label">Buy 7d %</span><br><input type="number" id="b7" value="12" step="0.5"></div>
+  <div><span class="setting-label">Min Vol Ratio</span><br><input type="number" id="volratio" value="2.5" step="0.1"></div>
+  <div><span class="setting-label">TP %</span><br><input type="number" id="tp" value="15" step="1"></div>
+  <div><span class="setting-label">SL %</span><br><input type="number" id="sl" value="7" step="1"></div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search coin...">
+  <button id="refresh">↻ Refresh</button>
+  <button id="export">Export CSV</button>
 </div>
 
 <table id="table">
   <thead>
     <tr>
-      <th data-sort="name">Coin</th>
-      <th data-sort="price">Price</th>
-      <th data-sort="change24">24h %</th>
-      <th data-sort="change7">7d %</th>
-      <th data-sort="volume">Volume</th>
-      <th data-sort="rsi">RSI(14)</th>
-      <th data-sort="macd">MACD Hist</th>
-      <th data-sort="signal">Signal</th>
-      <th>Entry</th><th>TP</th><th>SL</th><th>Confidence</th>
+      <th>Coin</th>
+      <th>Price</th>
+      <th>24h</th>
+      <th>7d</th>
+      <th>Trend</th>
+      <th>Signal</th>
+      <th>Entry</th>
+      <th>TP</th>
+      <th>SL</th>
+      <th>Score</th>
+      <th>Conf</th>
     </tr>
   </thead>
-  <tbody></tbody>
+  <tbody id="tbody"></tbody>
 </table>
 
 <div class="pagination" id="pagination"></div>
 
-<div style="margin-top:2rem;padding:1rem;background:#78350f;border-radius:8px;font-size:0.9rem;">
-  <strong>Disclaimer:</strong> Not advice. Daily data. Crypto high risk.
+<div id="chart-modal">
+  <button id="close-modal">× Close</button>
+  <div id="chart-title">Loading chart…</div>
+  <div id="chart-container"></div>
 </div>
 
 <script>
-const API_BASE = 'https://min-api.cryptocompare.com/data';
+const COINGECKO = 'https://api.coingecko.com/api/v3';
+const FNG_URL = 'https://api.alternative.me/fng/?limit=1';
+
 let allCoins = [];
 let currentPage = 1;
-let rowsPerPage = 20;
-let sortColumn = 'name';
-let sortDirection = 'asc';
+const perPage = 20;
 
-function calculateRSI(prices, period = 14) {
-  if (prices.length < period + 1) return 50;
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const change = prices[i] - prices[i-1];
-    gains += change > 0 ? change : 0;
-    losses += change < 0 ? -change : 0;
-  }
-  let avgGain = gains / period;
-  let avgLoss = losses / period || 0.0001;
-  let rsi = 100 - (100 / (1 + avgGain / avgLoss));
-  for (let i = period + 1; i < prices.length; i++) {
-    const change = prices[i] - prices[i-1];
-    avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
-    avgLoss = (avgLoss * (period - 1) + (change < 0 ? -change : 0)) / period || 0.0001;
-    rsi = 100 - (100 / (1 + avgGain / avgLoss));
-  }
-  return Math.round(rsi * 100) / 100;
+function saveSettings() {
+  const s = {};
+  ['sb24','sb7','b24','b7','volratio','tp','sl'].forEach(id => {
+    s[id] = parseFloat(document.getElementById(id).value);
+  });
+  localStorage.setItem('proSettings', JSON.stringify(s));
 }
 
-function calculateMACD(prices) {
-  if (prices.length < 35) return 0;
-  const ema = (data, period) => {
-    let k = 2 / (period + 1);
-    let em = data[0];
-    for (let i = 1; i < data.length; i++) em = data[i] * k + em * (1 - k);
-    return em;
-  };
-  const ema12 = ema(prices.slice(-26), 12);
-  const ema26 = ema(prices.slice(-26), 26);
-  return Math.round((ema12 - ema26) * 10000) / 10000;
+function loadSettings() {
+  const saved = localStorage.getItem('proSettings');
+  if (saved) {
+    const s = JSON.parse(saved);
+    Object.keys(s).forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.value = s[k];
+    });
+  }
 }
-
-async function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function loadData() {
-  const progress = document.getElementById('progress');
   const status = document.getElementById('status');
-  progress.style.width = '0%';
-  status.textContent = 'Fetching top coins...';
-  progress.style.width = '30%';
+  status.textContent = 'Analyzing real-time market...';
 
   try {
-    // Top coins by market cap (limit 100)
-    const topRes = await fetch(`${API_BASE}/top/mktcapfull?limit=100&tsym=USD`);
-    const topData = await topRes.json();
-    progress.style.width = '50%';
+    const [markets, fngRes] = await Promise.all([
+      fetch(`${COINGECKO}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h,7d`).then(r => r.json()),
+      fetch(FNG_URL).then(r => r.json())
+    ]);
 
-    // Global-ish data approximation (volume from top)
-    let totalVol = topData.Data.reduce((sum, d) => sum + (d.RAW?.USD?.VOLUMEDAY || 0), 0);
-    document.getElementById('total-vol').textContent = '$' + (totalVol / 1e9).toFixed(2) + 'B';
-    document.getElementById('total-mcap').textContent = '— (approx from top 100)';
-    document.getElementById('last-update').textContent = new Date().toLocaleString();
+    const fgValue = fngRes.data[0].value;
 
-    allCoins = [];
-    for (let item of topData.Data.slice(0, 70)) {  // limit to ~70 to stay under rate limits
-      const coin = item.CoinInfo.Name;
-      const full = item.RAW?.USD;
-      if (!full || full.PRICE < 0.0001 || full.VOLUME24HOUR < 1e6) continue;
+    allCoins = markets.map(c => {
+      const ch24 = c.price_change_percentage_24h || 0;
+      const ch7d = c.price_change_percentage_7d_in_currency || 0;
+      const volRatio = c.market_cap > 0 ? c.total_volume / c.market_cap : 0;
 
-      await delay(500); // gentle delay to avoid 429
+      const sb24 = parseFloat(document.getElementById('sb24').value);
+      const sb7 = parseFloat(document.getElementById('sb7').value);
+      const b24 = parseFloat(document.getElementById('b24').value);
+      const b7 = parseFloat(document.getElementById('b7').value);
+      const minVol = parseFloat(document.getElementById('volratio').value);
 
-      let hist;
-      try {
-        const histRes = await fetch(`${API_BASE}/v2/histoday?fsym=${coin}&tsym=USD&limit=90`);
-        hist = await histRes.json();
-      } catch { continue; }
+      let signal = 'NEUTRAL', cls = 'neutral', conf = 40, score = 0;
 
-      if (hist.Data?.Data?.length < 50) continue;
-      const prices = hist.Data.Data.map(d => d.close).filter(p => p > 0);
+      const consistentUp = ch24 > 0 && ch7d > 0;
+      const consistentDown = ch24 < 0 && ch7d < 0;
 
-      const current = full.PRICE;
-      const change24 = full.CHANGEPCT24HOUR || 0;
-      const change7 = (prices[prices.length-1] - prices[prices.length-8]) / prices[prices.length-8] * 100 || 0;
-      const rsi = calculateRSI(prices);
-      const macd = calculateMACD(prices);
-      const vol24 = full.VOLUME24HOUR;
+      if (ch24 > sb24 && ch7d > sb7 && volRatio > minVol && consistentUp) {
+        signal = 'STRONG BUY'; cls = 'strong-buy'; conf = 92; score = 92;
+      } else if (ch24 > b24 && ch7d > b7 && volRatio > minVol - 0.8 && consistentUp) {
+        signal = 'BUY'; cls = 'buy'; conf = 78; score = 78;
+      } else if (ch24 < -sb24 && ch7d < -sb7 && volRatio > minVol && consistentDown) {
+        signal = 'STRONG SELL'; cls = 'strong-sell'; conf = 90; score = -90;
+      } else if (ch24 < -b24 && ch7d < -b7 && volRatio > minVol - 0.8 && consistentDown) {
+        signal = 'SELL'; cls = 'sell'; conf = 75; score = -75;
+      }
 
-      let signal = 'Neutral', cls = 'neutral', confidence = 45;
-      const momentum = change7 / 100;
-      const isBullish = current > prices.slice(-50).reduce((a,b)=>a+b,0)/50 * 1.015 && momentum > 0.04;
-      const isBearish = current < prices.slice(-50).reduce((a,b)=>a+b,0)/50 * 0.985 && momentum < -0.03;
+      // Adjust with Fear & Greed
+      if (fgValue < 30 && signal.includes('BUY')) conf += 8;
+      if (fgValue > 70 && signal.includes('SELL')) conf += 6;
 
-      if (isBullish && rsi < 40) { signal = 'Strong Buy'; cls = 'strong-buy'; confidence = 82; }
-      else if (isBullish && rsi < 55) { signal = 'Buy'; cls = 'buy'; confidence = 68; }
-      else if (isBearish && rsi > 60) { signal = 'Strong Sell'; cls = 'strong-sell'; confidence = 78; }
-      else if (isBearish && rsi > 45) { signal = 'Sell'; cls = 'sell'; confidence = 65; }
+      const entry = c.current_price;
+      const tpPct = parseFloat(document.getElementById('tp').value) / 100;
+      const slPct = parseFloat(document.getElementById('sl').value) / 100;
+      const tp = (entry * (1 + tpPct)).toFixed(4);
+      const sl = (entry * (1 - slPct)).toFixed(4);
 
-      allCoins.push({
-        name: item.CoinInfo.FullName || coin,
-        symbol: coin,
-        image: `https://www.cryptocompare.com${item.CoinInfo.ImageUrl || '/media/empty.png'}`,
-        price: current,
-        change24,
-        change7,
-        volume: vol24,
-        rsi,
-        macd,
-        signal, cls, confidence,
-        entry: current.toFixed(4),
-        tp: (current * 1.08).toFixed(4),
-        sl: (current * 0.94).toFixed(4)
-      });
+      return {
+        name: c.name,
+        symbol: c.symbol.toUpperCase(),
+        image: c.image,
+        price: c.current_price,
+        ch24, ch7d,
+        volume: c.total_volume,
+        volRatio,
+        signal, cls, conf, score,
+        entry, tp, sl
+      };
+    });
+
+    // Sort by score descending
+    allCoins.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
+
+    status.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    renderTable();
+
+    // Show top coin
+    if (allCoins.length > 0) {
+      const top = allCoins[0];
+      document.getElementById('top-name').textContent = `${top.name} (${top.symbol})`;
+      document.getElementById('top-signal').textContent = top.signal;
+      document.getElementById('top-signal').className = top.cls;
+      document.getElementById('top-score').textContent = `Score: ${top.score > 0 ? '+' : ''}${top.score}`;
     }
 
-    progress.style.width = '100%';
-    status.textContent = `Loaded ${allCoins.length} coins • ${new Date().toLocaleTimeString()}`;
-    renderTable();
-  } catch(e) {
-    status.textContent = 'Error – possibly rate limit. Wait 1–2 min & retry.';
-    console.error(e);
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message;
   }
 }
 
-// ... (keep the same renderTable, renderPagination, event listeners, sorting, theme, export as in previous version)
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
 
-document.getElementById('refresh').addEventListener('click', loadData);
-document.getElementById('search').addEventListener('input', () => { currentPage = 1; renderTable(); });
-document.getElementById('rows-per-page').addEventListener('change', e => { rowsPerPage = +e.target.value; currentPage = 1; renderTable(); });
-document.getElementById('theme-toggle').addEventListener('click', () => {
-  const isDark = document.body.dataset.theme === 'dark';
-  document.body.dataset.theme = isDark ? 'light' : 'dark';
-  document.getElementById('theme-toggle').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-});
-document.getElementById('export').addEventListener('click', () => {
+  let filtered = [...allCoins];
+  const term = document.getElementById('search').value.trim().toLowerCase();
+  if (term) filtered = filtered.filter(c => c.name.toLowerCase().includes(term) || c.symbol.toLowerCase().includes(term));
+
+  const start = (currentPage - 1) * perPage;
+  const pageData = filtered.slice(start, start + perPage);
+
+  pageData.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:left"><img src="${c.image}" class="coin">${c.name} (${c.symbol})</td>
+      <td>$${c.price.toLocaleString(undefined,{minimumFractionDigits:2,maxFractionDigits:6})}</td>
+      <td>${c.ch24.toFixed(2)}%</td>
+      <td>${c.ch7d.toFixed(2)}%</td>
+      <td class="${c.ch24 > 0 && c.ch7d > 0 ? 'up' : c.ch24 < 0 && c.ch7d < 0 ? 'down' : ''}">${c.ch24 > 0 && c.ch7d > 0 ? 'UP' : c.ch24 < 0 && c.ch7d < 0 ? 'DOWN' : 'FLAT'}</td>
+      <td class="${c.cls}">${c.signal}</td>
+      <td>$${c.entry.toFixed(4)}</td>
+      <td>$${c.tp}</td>
+      <td>$${c.sl}</td>
+      <td>${c.score}</td>
+      <td>${c.conf}%</td>
+    `;
+    tr.onclick = () => openChart(c.symbol, c.name);
+    tbody.appendChild(tr);
+  });
+
+  renderPagination(filtered.length);
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / perPage);
+  const container = document.getElementById('pagination');
+  container.innerHTML = '';
+  for (let i = 1; i <= pages; i++) {
+    const btn = document.createElement('button');
+    btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+    btn.textContent = i;
+    btn.onclick = () => { currentPage = i; renderTable(); };
+    container.appendChild(btn);
+  }
+}
+
+function openChart(symbol, name) {
+  const modal = document.getElementById('chart-modal');
+  const title = document.getElementById('chart-title');
+  const container = document.getElementById('chart-container');
+  title.textContent = `${name} (${symbol}) Real-time`;
+  container.innerHTML = '';
+
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    autosize: true,
+    symbol: `BINANCE:${symbol}USDT`,
+    interval: "D",
+    timezone: "exchange",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    container_id: "chart-container"
+  });
+  container.appendChild(script);
+  modal.classList.add('active');
+}
+
+document.getElementById('close-modal').onclick = () => {
+  document.getElementById('chart-modal').classList.remove('active');
+  document.getElementById('chart-container').innerHTML = '';
+};
+
+document.getElementById('refresh').onclick = loadData;
+document.getElementById('search').oninput = () => { currentPage = 1; renderTable(); };
+
+document.getElementById('export').onclick = () => {
   if (!allCoins.length) return;
-  const csv = ['Coin,Price,24h%,7d%,Volume,RSI,MACD,Signal,Confidence'];
-  allCoins.forEach(c => csv.push(`${c.name},${c.price},${c.change24},${c.change7},${c.volume},${c.rsi},${c.macd},${c.signal},${c.confidence}`));
-  const blob = new Blob([csv.join('\n')], {type: 'text/csv'});
+  let csv = 'Coin,Price,24h%,7d%,Signal,Entry,TP,SL,Score,Conf\n';
+  allCoins.forEach(c => {
+    csv += `${c.name},${c.price},${c.ch24},${c.ch7d},${c.signal},${c.entry},${c.tp},${c.sl},${c.score},${c.conf}\n`;
+  });
+  const blob = new Blob([csv], {type: 'text/csv'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'signals.csv'; a.click();
-});
+  a.href = url; a.download = 'accurate_signals.csv'; a.click();
+};
 
-document.querySelectorAll('th[data-sort]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.sort;
-    if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    else { sortColumn = col; sortDirection = 'desc'; }
-    document.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
-    th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
-    currentPage = 1; renderTable();
+['sb24','sb7','b24','b7','volratio','tp','sl'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    saveSettings();
+    loadData();
   });
 });
 
-function renderTable() { /* same as before - filter, sort, paginate, build rows */ }
-function renderPagination(total) { /* same as before */ }
-
-window.onload = () => { loadData(); setInterval(loadData, 900000); }; // 15 min auto
+window.onload = () => {
+  loadSettings();
+  loadData();
+  setInterval(loadData, 900000);
+};
 </script>
 </body>
 </html>
